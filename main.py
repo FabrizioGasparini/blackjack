@@ -9,7 +9,7 @@ class CardSuit(Enum):
     PICCHE = 3
 
 class CardValue(Enum):
-    UNO = 1
+    ASSO = 1
     DUE = 2
     TRE = 3
     QUATTRO = 4
@@ -109,17 +109,35 @@ class Player:
     # Returns the total value of the player hand
     @property
     def total(self):
-        total = 0
+        total = self.total_no_aces()
+
+        aces_count = 0
         for card in self.hand:
             value = card.value.value
             if value == 1:
-                if self.total_no_aces() < 11:
-                    value = 11
-            if value == "J" or value == "Q" or value == "K":
-                value = 10
+                aces_count += 1
 
-            total += value
-
+        if aces_count > 0:
+            if aces_count == 1:
+                if total + 11 <= 21:
+                    total += 11
+                    return total
+                else:
+                    total += 1
+                    return total
+            else:
+                partial = total
+                for i in range(aces_count):
+                    partial += 1
+                
+                if partial >= 21:
+                    return partial
+                elif partial < 21:
+                    while (partial - 1) + 11 < 21:
+                        partial += 10 # 11 - 1
+                    
+                    return partial
+                
         return total
     
     def total_no_aces(self):
@@ -133,15 +151,6 @@ class Player:
                 total += value
 
         return total
-
-deck = Deck()
-deck.build()
-deck.shuffle()
-
-starting_budget = int(input("Inserisci il tuo BUDGET INIZIALE: $"))
-player = Player(starting_budget)
-
-dealer = Player()
 
 def clear():
     os.system("cls")
@@ -164,13 +173,22 @@ def reveal_hands():
 
     print("\n==========\n")
 
+deck = Deck()
+deck.build()
+deck.shuffle()
+
+starting_budget = float(input("Inserisci il tuo BUDGET INIZIALE: $"))
+player = Player(starting_budget)
+
+dealer = Player()
+
 while True:
     if player.budget <= 0:
         break
 
     bet = 0
     while bet == 0 or bet > player.budget:
-        bet = int(input(f"\nHai ${player.budget}. Quanto vuoi scommettere? $"))
+        bet = float(input(f"\nHai ${player.budget}. Quanto vuoi scommettere? $"))
     
     deck.add_cards_to_discards(player.hand)
     deck.add_cards_to_discards(dealer.hand)
@@ -180,19 +198,30 @@ while True:
 
     deck.shuffle()
 
+    print(player.total, dealer.total)
     player.add_cards(deck.draws_card(2))
     dealer.add_cards(deck.draws_card(2))
-    
+
     if (player.total == 21 and dealer.total == 21):
-        print("Blackjack Player")
+        reveal_hands()
+        print("Doppio Blackjack!")
+        print("Pareggio")
+        continue
     elif (player.total == 21):
-        print("Blackjack Player")  
+        reveal_hands()
+        print("Hai Blackjack!")  
+        print("Hai Vinto!")
+        player.budget += bet * 1.5  
+        continue
     elif (dealer.total == 21):
-        print("Blackjack Dealer")
+        reveal_hands()
+        print("Il Banco ha Blackjack!")
+        print("Hai Perso!")
+        player.budget -= bet  
+        continue
 
     stop = False
     while not stop:
-        clear()
         print_hands()
 
         print("Cosa vuoi fare?")
@@ -232,6 +261,7 @@ while True:
                 reveal_hands()
 
                 if dealer.total > 21:
+                    print("Il Banco ha Sballato!")
                     print("Hai Vinto!")
                     player.budget += bet
                 else:
@@ -247,6 +277,7 @@ while True:
 
 clear()
 print("\n================\n")
+print("SEI AL VERDE!")
 print("HAI PERSO TUTTO!")
 print("\n================\n")
 
