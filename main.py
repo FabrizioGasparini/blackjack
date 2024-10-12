@@ -1,5 +1,6 @@
 from enum import Enum
 import random
+import os
 
 class CardSuit(Enum):
     CUORI = 0
@@ -69,8 +70,8 @@ class Deck:
         self.cards.append(card)
     
     # Adds a cards to the discard deck
-    def add_card_to_discards(self, card: Card):
-        self.discards.append(card) 
+    def add_cards_to_discards(self, cards: list[Card]):
+        self.discards += cards 
     
     # Draws n cards from the deck
     def draws_card(self, count: int):
@@ -101,6 +102,9 @@ class Player:
     def add_cards(self, cards: list[Card]):
         self.hand += cards
 
+    def clear_hand(self):
+        self.hand = []
+
     
     # Returns the total value of the player hand
     @property
@@ -108,10 +112,25 @@ class Player:
         total = 0
         for card in self.hand:
             value = card.value.value
+            if value == 1:
+                if self.total_no_aces() < 11:
+                    value = 11
             if value == "J" or value == "Q" or value == "K":
                 value = 10
 
             total += value
+
+        return total
+    
+    def total_no_aces(self):
+        total = 0
+        for card in self.hand:
+            value = card.value.value
+            if value == "J" or value == "Q" or value == "K":
+                value = 10
+
+            if value != 1:
+                total += value
 
         return total
 
@@ -119,23 +138,116 @@ deck = Deck()
 deck.build()
 deck.shuffle()
 
-starting_budget = int(input("Inserisci il tuo BUDGET INIZIALE: "))
+starting_budget = int(input("Inserisci il tuo BUDGET INIZIALE: $"))
 player = Player(starting_budget)
 
 dealer = Player()
 
+def clear():
+    os.system("cls")
+
+def print_hands():
+    clear()
+    print("\n==========\n")
+    
+    print(f"Mano Giocatore: {player} ({player.total})")
+    print(f"Mano Dealer: [{dealer.hand[0]}]")
+
+    print("\n==========\n")
+
+def reveal_hands():
+    clear()
+    print("\n==========\n")
+    
+    print(f"Mano Giocatore: {player} ({player.total})")
+    print(f"Mano Dealer: {dealer} ({dealer.total})")
+
+    print("\n==========\n")
+
 while True:
+    if player.budget <= 0:
+        break
+
     bet = 0
     while bet == 0 or bet > player.budget:
-        bet = int(input(f"Hai ${player.budget}. Quanto vuoi scommettere? "))
+        bet = int(input(f"\nHai ${player.budget}. Quanto vuoi scommettere? $"))
     
+    deck.add_cards_to_discards(player.hand)
+    deck.add_cards_to_discards(dealer.hand)
+
+    player.clear_hand()
+    dealer.clear_hand()
+
     deck.shuffle()
 
     player.add_cards(deck.draws_card(2))
     dealer.add_cards(deck.draws_card(2))
+    
+    if (player.total == 21 and dealer.total == 21):
+        print("Blackjack Player")
+    elif (player.total == 21):
+        print("Blackjack Player")  
+    elif (dealer.total == 21):
+        print("Blackjack Dealer")
 
-    print(f"Mano Giocatore: {player} ({player.total})")
-    print(f"Mano Dealer: [{dealer.hand[0]}]")
+    stop = False
+    while not stop:
+        clear()
+        print_hands()
 
+        print("Cosa vuoi fare?")
+        print(" [0] Carta")
+        print(" [1] Stop")
+    
+        choice = input("> ")
+
+        if choice == "0":
+            player.add_cards(deck.draws_card(1))
+            print_hands()
+
+            if(player.total > 21):
+                stop = True
+        
+        elif choice == "1":
+            stop = True
+
+    reveal_hands()
+    if player.total > 21:
+        print("Hai Sballato!")
+        player.budget -= bet
+    else:
+        if dealer.total > player.total:
+            print("Hai Perso!")
+            player.budget -= bet
+        elif dealer.total == player.total:
+            print("Pareggio!")
+        else:
+            if dealer.total > 16:
+                print("Hai Vinto!")
+                player.budget += bet
+            else:
+                while dealer.total < 17:
+                    dealer.add_cards(deck.draws_card(1))
+
+                reveal_hands()
+
+                if dealer.total > 21:
+                    print("Hai Vinto!")
+                    player.budget += bet
+                else:
+                    if dealer.total > player.total:
+                        print("Hai Perso!")
+                        player.budget -= bet
+                    elif dealer.total == player.total:
+                        print("Pareggio!")
+                    else:
+                        print("Hai Vinto!")
+                        player.budget += bet
+                
+
+clear()
+print("\n================\n")
+print("HAI PERSO TUTTO!")
+print("\n================\n")
 
 # ♥♦♣♠
