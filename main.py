@@ -155,31 +155,41 @@ class Player:
 def clear():
     os.system("cls")
 
+def print_centered(length, string, new_line = True):
+    if new_line:
+        print(" " * ((length - len(string)) // 2) + string)
+    else:
+        print(" " * ((length - len(string)) // 2) + string, end="")
+
+def print_space():
+    print("\n==================================================\n")
+
 def print_hands():
     clear()
-    print("\n==========\n")
+    print_space()
     
-    print(f"Mano Giocatore: {player} ({player.total})")
-    print(f"Mano Dealer: [{dealer.hand[0]}]")
-
-    print("\n==========\n")
+    print_centered(50, f"Mano Giocatore: {player} ({player.total})")
+    print_centered(50, f"Mano Dealer: [{dealer.hand[0]}]")
 
 def reveal_hands():
     clear()
-    print("\n==========\n")
+    print_space()
     
-    print(f"Mano Giocatore: {player} ({player.total})")
-    print(f"Mano Dealer: {dealer} ({dealer.total})")
+    print_centered(50, f"Mano Giocatore: {player} ({player.total})")
+    print_centered(50, f"Mano Dealer: {dealer} ({dealer.total})")
 
-    print("\n==========\n")
+
 
 deck = Deck()
 deck.build()
 deck.shuffle()
 
-starting_budget = float(input("Inserisci il tuo BUDGET INIZIALE: $"))
-player = Player(starting_budget)
+print_space()
+print_centered(50, "Inserisci il tuo BUDGET INIZIALE: ", False)
+starting_budget = float(input("$"))
+print_space()
 
+player = Player(starting_budget)
 dealer = Player()
 
 while True:
@@ -188,7 +198,9 @@ while True:
 
     bet = 0
     while bet == 0 or bet > player.budget:
-        bet = float(input(f"\nHai ${player.budget}. Quanto vuoi scommettere? $"))
+        print_centered(50, f"Hai ${player.budget}. Quanto vuoi scommettere? ", False)
+        bet = float(input("$"))
+        print_space()
     
     deck.add_cards_to_discards(player.hand)
     deck.add_cards_to_discards(dealer.hand)
@@ -204,19 +216,25 @@ while True:
 
     if (player.total == 21 and dealer.total == 21):
         reveal_hands()
-        print("Doppio Blackjack!")
-        print("Pareggio")
+        print_space()
+        print_centered(50, "DOPPIO BLACKJACK!")
+        print_centered(50, "PAREGGIO!")
+        print_space()
         continue
     elif (player.total == 21):
         reveal_hands()
-        print("Hai Blackjack!")  
-        print("Hai Vinto!")
+        print_space()
+        print_centered(50, "HAI BLACKJACK!")
+        print_centered(50, "HAI VINTO!")
+        print_space()
         player.budget += bet * 1.5  
         continue
     elif (dealer.total == 21):
         reveal_hands()
-        print("Il Banco ha Blackjack!")
-        print("Hai Perso!")
+        print_space()
+        print_centered(50, "IL BANCO HA BLACKJACK!")
+        print_centered(50, "HAI PERSO!")
+        print_space()
         player.budget -= bet  
         continue
 
@@ -224,35 +242,45 @@ while True:
     while not stop:
         print_hands()
 
+        print_space()
         print("Cosa vuoi fare?")
-        print(" [0] Carta")
-        print(" [1] Stop")
+        print(" [0] Stop")
+        print(" [1] Carta")
     
         choice = input("> ")
 
-        if choice == "0":
+        if choice == "1":
             player.add_cards(deck.draws_card(1))
             print_hands()
 
             if(player.total > 21):
                 stop = True
         
-        elif choice == "1":
+        elif choice == "0":
             stop = True
 
     reveal_hands()
     if player.total > 21:
-        print("Hai Sballato!")
+        print_space()
+        print_centered(50, "HAI SBALLATO!")
+        print_centered(50, "HAI PERSO!")
+        print_space()
         player.budget -= bet
     else:
         if dealer.total > player.total:
-            print("Hai Perso!")
+            print_space()
+            print_centered(50, "HAI PERSO!")
+            print_space()
             player.budget -= bet
         elif dealer.total == player.total:
-            print("Pareggio!")
+            print_space()
+            print_centered(50, "PAREGGIO!")
+            print_space()
         else:
             if dealer.total > 16:
-                print("Hai Vinto!")
+                print_space()
+                print_centered(50, "HAI VINTO!")
+                print_space()
                 player.budget += bet
             else:
                 while dealer.total < 17:
@@ -261,24 +289,28 @@ while True:
                 reveal_hands()
 
                 if dealer.total > 21:
-                    print("Il Banco ha Sballato!")
-                    print("Hai Vinto!")
+                    print_space()
+                    print_centered(50, "IL BANCO HA SBALLATO!")
+                    print_centered(50, "HAI VINTO!")
+                    print_space()
                     player.budget += bet
                 else:
                     if dealer.total > player.total:
-                        print("Hai Perso!")
+                        print_space()
+                        print_centered(50, "HAI PERSO!")
+                        print_space()
                         player.budget -= bet
                     elif dealer.total == player.total:
-                        print("Pareggio!")
+                        print_space()
+                        print_centered(50, "Pareggio!")
+                        print_space()
                     else:
-                        print("Hai Vinto!")
+                        print_space()
+                        print_centered(50, "HAI VINTO!")
+                        print_space()
                         player.budget += bet
                 
 
-clear()
-print("\n================\n")
-print("SEI AL VERDE!")
-print("HAI PERSO TUTTO!")
-print("\n================\n")
-
-# ♥♦♣♠
+print_centered(50, "SEI AL VERDE!")
+print_centered(50, "HAI PERSO TUTTO!")
+print_space()
