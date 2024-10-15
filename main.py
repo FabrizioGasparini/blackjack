@@ -1,3 +1,4 @@
+from cgitb import handler
 from enum import Enum
 import random
 import os
@@ -152,6 +153,22 @@ class Player:
 
         return total
 
+    @property
+    def can_double(self):
+        if len(self.hand) > 2:
+            return False
+        return True
+    
+    @property
+    def can_split(self):
+        if not self.can_double():
+            return False
+        
+        if Card(self.hand[0]).value.value != Card(self.hand[1]).value.value:
+            return False
+        
+        return True
+
 def clear():
     os.system("cls")
 
@@ -246,18 +263,29 @@ while True:
         print("Cosa vuoi fare?")
         print(" [0] Stop")
         print(" [1] Carta")
+        if(player.can_double): print(" [2] Raddoppio")
+        if(player.can_split): print(" [2] Raddoppio")
     
         choice = input("> ")
 
-        if choice == "1":
+        if choice == "0":
+            stop = True
+        elif choice == "1":
             player.add_cards(deck.draws_card(1))
             print_hands()
 
             if(player.total > 21):
                 stop = True
-        
-        elif choice == "0":
+        elif choice == "2" and player.can_double:
+            player.add_cards(deck.draws_card(1))
+            print_hands()
+            
             stop = True
+        elif choice == "3" and player.can_double:
+            print("Can Double")
+        else:
+            continue
+        
 
     reveal_hands()
     if player.total > 21:
