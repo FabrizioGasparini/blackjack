@@ -1,4 +1,3 @@
-from cgitb import handler
 from enum import Enum
 import random
 import os
@@ -161,10 +160,10 @@ class Player:
     
     @property
     def can_split(self):
-        if not self.can_double():
+        if not self.can_double:
             return False
         
-        if Card(self.hand[0]).value.value != Card(self.hand[1]).value.value:
+        if self.hand[0].value.value != self.hand[1].value.value:
             return False
         
         return True
@@ -264,7 +263,7 @@ while True:
         print(" [0] Stop")
         print(" [1] Carta")
         if(player.can_double): print(" [2] Raddoppio")
-        if(player.can_split): print(" [2] Raddoppio")
+        #if(player.can_split): print(" [3] Split")
     
         choice = input("> ")
 
